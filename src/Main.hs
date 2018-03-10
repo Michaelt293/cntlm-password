@@ -6,6 +6,9 @@ import qualified Data.Text       as T
 import qualified Data.Text.IO    as TIO
 import           Turtle
 
+confFilePath :: IsString a => a
+confFilePath = "/usr/local/etc/cntlm.conf"
+
 keyHashes :: Text -> (Text, Text)
 keyHashes l = case (T.splitAt 16 . T.take 48) l of
               (k, h) -> (T.stripEnd k, h)
@@ -16,20 +19,21 @@ sedCommand (key, hash) = do
                         , key
                         , " +/ s/[A-F0-9]{32}/"
                         , hash
-                        , "/g' /usr/local/etc/cntlm.conf"
+                        , "/g' "
+                        , confFilePath
                         ]
   -- Horrible hack
   newHash <- strict $ inshell command empty
-  TIO.writeFile "/usr/local/etc/cntlm.conf" newHash
+  TIO.writeFile confFilePath newHash
 
 main :: IO ()
 main = do
   void $ shell "pkill cntlm" empty
   TIO.putStr "Enter password: "
   out <- strict $ inshell "cntlm -H" stdin
-  let outLine = T.lines out
-  let hashes = if length outLine == 4
-                 then keyHashes <$> tail outLine
-                 else error "Output not formatted as expected: 4 lines expected"
+  let outLines = T.lines out
+  let hashes = if length outLines == 4
+                 then keyHashes <$> tail outLines
+                 else error "Output error: 4 lines expected from cntlm -H"
   mapM_ sedCommand hashes
   void $ shell "cntlm" empty
