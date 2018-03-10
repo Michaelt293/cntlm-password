@@ -14,11 +14,9 @@ sedCommand :: (Text, Text) -> IO ()
 sedCommand (key, hash) = do
   let command = mconcat [ "sed -E '/"
                         , key
-                        , " +"
-                        , "/ s/[A-F0-9]{32}/"
+                        , " +/ s/[A-F0-9]{32}/"
                         , hash
-                        , "/g' "
-                        , "/usr/local/etc/cntlm.conf"
+                        , "/g' /usr/local/etc/cntlm.conf"
                         ]
   -- Horrible hack
   newHash <- strict $ inshell command empty
