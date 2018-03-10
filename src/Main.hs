@@ -32,3 +32,4 @@ main = do
                  then keyHashes <$> tail outLine
                  else error "Output not formatted as expected: 4 lines expected"
   mapM_ sedCommand hashes
+  void $ shell "cntlm" empty
