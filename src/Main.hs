@@ -2,7 +2,6 @@
 module Main where
 
 import           Control.Monad   (void)
-import           Data.List       (intersperse)
 import qualified Data.Text       as T
 import qualified Data.Text.IO    as TIO
 import           Turtle
