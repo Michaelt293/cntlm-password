@@ -6,5 +6,5 @@ cntlm.
 
 `cntlm-password` assumes that -
   * you are using MacOS
-  * cntlm, sed and pkill are installed.
+  * cntlm and pkill are installed.
   * your cntlm conf file path is "/usr/local/etc/cntlm.conf"
