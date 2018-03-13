@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import           Control.Monad (void)
-import qualified Data.Text     as T
-import qualified Data.Text.IO  as TIO
+import           Control.Monad         (void)
+import qualified Data.Text             as T
+import qualified Data.Text.IO          as TIO
+import           System.Posix.IO       (stdInput)
+import           System.Posix.Terminal
 import           Turtle
-import System.Posix.Terminal
-import System.Posix.IO (stdInput)
 
 confFilePath :: IsString a => a
 confFilePath = "/usr/local/etc/cntlm.conf"
