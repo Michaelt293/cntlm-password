@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Main where
+module Lib where
 
 import           Control.Monad         (void)
 import qualified Data.Text             as T
@@ -13,15 +13,15 @@ confFilePath = "/usr/local/etc/cntlm.conf"
 
 data Key = PassLM | PassNT | PassNTLMv2 deriving (Show, Eq)
 
-hashPattern :: Pattern Key
-hashPattern = ("PassLM" *> return PassLM) <|>
+keyPattern :: Pattern Key
+keyPattern = ("PassLM" *> return PassLM) <|>
               ("PassNT" *> return PassNT) <|>
               ("PassNTLMv2" *> return PassNTLMv2)
 
 keyHashPattern :: Pattern (Key, Text)
 keyHashPattern = do
-  key <- hashPattern
-  void spaces
+  key <- keyPattern
+  void spaces1
   hash <- count 32 hexDigit
   return (key, T.pack hash)
 
@@ -33,10 +33,22 @@ replaceHashPattern [] = empty
 replaceHashPattern ((key, newHash) : _) =
   let keyText = T.pack (show key)
   in do
-     key <- text keyText
-     ss <- spaces
+     ss0 <- spaces
+     void $ text keyText
+     ss1 <- spaces1
      void $ count 32 hexDigit
-     return $ keyText <> ss <> newHash
+     ending <- comment <|> spaces
+     return $ ss0 <> keyText <> ss1 <> newHash <> ending
+
+comment :: Pattern Text
+comment = do
+  ss <- spaces1
+  void $ char '#'
+  commentText <- star anyChar
+  return $ ss <> "#" <> commentText
+
+lineToPattern :: Line -> Pattern Text
+lineToPattern = replaceHashPattern . matchKeyHash
 
 getPassword :: IO Line
 getPassword = do
@@ -57,12 +69,5 @@ getPassword = do
 sedCommand :: Line -> Shell ()
 sedCommand password = do
   newHashes <- inshell "cntlm -H" $ return password
-  let pattern = replaceHashPattern . matchKeyHash $ newHashes
-  liftIO $ inplacePrefix pattern confFilePath
-
-main :: IO ()
-main = do
-  void $ shell "pkill cntlm" empty
-  password <- getPassword
-  sh $ sedCommand password
-  void $ shell "cntlm" empty
+  let pattern = lineToPattern newHashes
+  liftIO $ inplaceEntire pattern confFilePath
