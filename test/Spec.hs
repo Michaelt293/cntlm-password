@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main where
 
-import qualified Data.Text  as T
 import           Lib
 import           Test.Hspec
 import           Turtle
@@ -66,3 +65,6 @@ main = hspec $ do
     it "Leading spaces should still result in a match" $
       match (lineToPattern "PassNTLMv2      251A353F8B4355D3DA42088E476E4070") "  PassNTLMv2      C420233A0A0EB4F388E6649B70B6A9DD"
       `shouldBe` ["  PassNTLMv2      251A353F8B4355D3DA42088E476E4070"]
+    it "Malformed line should not match" $
+      match (lineToPattern "PassNTLMv2      251A353F8B4355D3DA42088E476E4070") "PassNTLMv2      C420233A0A0EB4F388E6649B70B6A9DD Oh no! Forgot the pound :("
+      `shouldBe` []
