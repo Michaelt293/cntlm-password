@@ -15,10 +15,10 @@ Install [Stack](https://docs.haskellstack.org/en/stable/README/) -
 `curl -sSL https://get.haskellstack.org/ | sh`
 
 Clone `cntlm-password` repository -
-`git clone https://github.com/Michaelt293/unwindows.git`
+`git clone https://github.com/Michaelt293/cntlm-password.git`
 
 Install -
 ```
-cd unwindows
+cd cntlm-password
 stack install
 ```
