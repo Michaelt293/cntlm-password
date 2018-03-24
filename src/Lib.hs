@@ -14,9 +14,10 @@ confFilePath = "/usr/local/etc/cntlm.conf"
 data Key = PassLM | PassNT | PassNTLMv2 deriving (Show, Eq)
 
 keyPattern :: Pattern Key
-keyPattern = ("PassLM" *> return PassLM) <|>
-              ("PassNT" *> return PassNT) <|>
-              ("PassNTLMv2" *> return PassNTLMv2)
+keyPattern =
+  ("PassLM" *> return PassLM)
+    <|> ("PassNT" *> return PassNT)
+    <|> ("PassNTLMv2" *> return PassNTLMv2)
 
 keyHashPattern :: Pattern (Key, Text)
 keyHashPattern = do
@@ -32,13 +33,13 @@ replaceHashPattern :: [(Key, Text)] -> Pattern Text
 replaceHashPattern [] = empty
 replaceHashPattern ((key, newHash) : _) =
   let keyText = T.pack (show key)
-  in do
-     ss0 <- spaces
-     void $ text keyText
-     ss1 <- spaces1
-     void $ count 32 hexDigit
-     ending <- comment <|> spaces
-     return $ ss0 <> keyText <> ss1 <> newHash <> ending
+  in  do
+        ss0 <- spaces
+        void $ text keyText
+        ss1 <- spaces1
+        void $ count 32 hexDigit
+        ending <- comment <|> spaces
+        return $ ss0 <> keyText <> ss1 <> newHash <> ending
 
 comment :: Pattern Text
 comment = do
@@ -55,16 +56,16 @@ getPassword = do
   tc <- getTerminalAttributes stdInput
   setTerminalAttributes stdInput (withoutMode tc EnableEcho) Immediately
   loop tc
-  where
-    loop tc' = do
-      TIO.putStrLn "Enter password: "
-      password1 <- TIO.getLine
-      TIO.putStrLn "Re-enter password: "
-      password2 <- TIO.getLine
-      if password1 == password2
-        then setTerminalAttributes stdInput tc' Immediately *>
-               return (unsafeTextToLine password1)
-        else stdout "Passwords did not match" *> loop tc'
+ where
+  loop tc' = do
+    TIO.putStrLn "Enter password: "
+    password1 <- TIO.getLine
+    TIO.putStrLn "Re-enter password: "
+    password2 <- TIO.getLine
+    if password1 == password2
+      then setTerminalAttributes stdInput tc' Immediately
+        *> return (unsafeTextToLine password1)
+      else stdout "Passwords did not match" *> loop tc'
 
 sedCommand :: Line -> Shell ()
 sedCommand password = do
